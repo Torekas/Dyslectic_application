@@ -1,0 +1,5 @@
+# Ignore service account JSON files
+*.json
+
+# If you need to include other JSON files, specify the exact ones to ignore
+dyslexia-app-443621-*.json

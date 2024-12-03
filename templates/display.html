@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Read - Dyslexia-Friendly Reader{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Content Display -->
+    <div class="content p-3" id="text-content">
+        <pre>{{ text }}</pre>
+    </div>
+
+    <!-- Control Buttons -->
+    <div class="text-center mt-3">
+        <button id="speak-btn" class="btn btn-success btn-lg">
+            <i class="fas fa-volume-up"></i> Listen
+        </button>
+        <button id="settings-btn" class="btn btn-info btn-lg" data-toggle="modal" data-target="#settingsModal">
+            <i class="fas fa-cog"></i> Settings
+        </button>
+        <a href="/" class="btn btn-secondary btn-lg">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<!-- Reading Ruler -->
+<div id="ruler"></div>
+
+<!-- Audio Player -->
+<audio id="audio-player" src="" hidden></audio>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="settings-form">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Reader Settings</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Font Size Adjustment -->
+                    <div class="form-group">
+                        <label for="font-size-slider">Font Size: <span id="font-size-value">18</span>px</label>
+                        <input type="range" class="form-control-range" id="font-size-slider" min="12" max="36" value="18">
+                    </div>
+                    <!-- Ruler Height Adjustment -->
+                    <div class="form-group">
+                        <label for="ruler-height-slider">Ruler Height: <span id="ruler-height-value">2</span>em</label>
+                        <input type="range" class="form-control-range" id="ruler-height-slider" min="1" max="5" step="0.1" value="2">
+                    </div>
+                    <!-- Toggle Ruler -->
+                    <div class="form-group form-check">
+                        <input type="checkbox" class="form-check-input" id="toggle-ruler-checkbox" checked>
+                        <label class="form-check-label" for="toggle-ruler-checkbox">Show Reading Ruler</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="save-settings-btn">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+{% endblock %}
