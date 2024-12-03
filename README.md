@@ -29,7 +29,7 @@ A web application designed to assist dyslexic children in reading and comprehens
 
 ## Demo
 
-[Live Demo Link](#) (Add the link to your deployed application here)
+[Live Demo Link](#) (To be added)
 
 ---
 
@@ -135,8 +135,6 @@ dyslexia-friendly-reader/
 
 ![Display Page](static/images/screenshot_display.png)
 
-*Note: Replace the placeholder images with actual screenshots of your application.*
-
 ---
 
 ## Contributing
@@ -189,11 +187,3 @@ This project is licensed under the [MIT License](LICENSE).
 - **Environment Variables**: Use environment variables or configuration files (not tracked by Git) to store sensitive information.
 
 ---
-
-## Contact
-
-For any questions or suggestions, please open an issue or contact [your-email@example.com](mailto:your-email@example.com).
-
----
-
-*This README was generated to provide an overview of the Dyslexia-Friendly Reader web application, including installation and usage instructions, project structure, and contribution guidelines.*
