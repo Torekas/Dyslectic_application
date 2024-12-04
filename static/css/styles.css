@@ -112,5 +112,15 @@ textarea {
     transition: transform 0.2s;
 }
 
+/* Style for clickable words */
+.word {
+    /* Optional: Add underline or different color to indicate clickability */
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.word:hover {
+    color: #0056b3;
+}
 
 

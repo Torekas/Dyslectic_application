@@ -12,9 +12,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Text-to-Speech
     const speakBtn = document.getElementById('speak-btn');
+    const stopBtn = document.getElementById('stop-btn'); // Added stop button
     const textContent = document.querySelector('.content pre').textContent;
 
+    let audioPlayer = new Audio();
+
     speakBtn.addEventListener('click', function() {
+        // Disable the speak button to prevent multiple clicks
+        speakBtn.disabled = true;
+        stopBtn.disabled = false;
+
         fetch('/speak', {
             method: 'POST',
             headers: {
@@ -22,19 +29,41 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify({ text: textContent }),
         })
-        .then(response => response.blob())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('TTS request failed');
+            }
+            return response.blob();
+        })
         .then(blob => {
             const url = URL.createObjectURL(blob);
-            const audioPlayer = document.getElementById('audio-player');
             audioPlayer.src = url;
             audioPlayer.play();
+            audioPlayer.onended = function() {
+                speakBtn.disabled = false;
+                stopBtn.disabled = true;
+                URL.revokeObjectURL(url);
+            };
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            speakBtn.disabled = false;
+            stopBtn.disabled = true;
+            alert('An error occurred while processing TTS.');
         });
+    });
+
+    stopBtn.addEventListener('click', function() {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        speakBtn.disabled = false;
+        stopBtn.disabled = true;
     });
 
     // Settings Modal Functionality
     const fontSizeSlider = document.getElementById('font-size-slider');
     const fontSizeValue = document.getElementById('font-size-value');
-    const rulerHeightSlider = document.getElementById('ruler-height-slider');
+    const rulerHeightSlider = document.getElementById('ruler-height-slider'); // Corrected ID
     const rulerHeightValue = document.getElementById('ruler-height-value');
     const toggleRulerCheckbox = document.getElementById('toggle-ruler-checkbox');
     const saveSettingsBtn = document.getElementById('save-settings-btn');
