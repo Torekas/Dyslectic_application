@@ -1,67 +1,108 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📖 Flask Text Reader</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Updated Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>📖 Flask Text Reader</h1>
 
-{% block title %}Home - Dyslexia-Friendly Reader{% endblock %}
-
-{% block content %}
-<div class="container mt-5">
-    <h1 class="text-center mb-4">Welcome!</h1>
-    <p class="lead text-center">Upload or enter text to get started.</p>
-
-    <!-- Carousel for Visual Appeal -->
-    <div id="welcomeCarousel" class="carousel slide mb-5" data-ride="carousel">
-        <ol class="carousel-indicators">
-            <li data-target="#welcomeCarousel" data-slide-to="0" class="active"></li>
-            <li data-target="#welcomeCarousel" data-slide-to="1"></li>
-            <li data-target="#welcomeCarousel" data-slide-to="2"></li>
-        </ol>
-        <div class="carousel-inner">
-            <div class="carousel-item active">
-                <img src="{{ url_for('static', filename='images/reading1.jpg') }}" class="d-block w-100" alt="Reading Image 1">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Enjoy Reading</h5>
-                    <p>Making reading fun and accessible.</p>
-                </div>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-messages">
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">
+              <p>{{ message }}</p>
             </div>
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='images/reading2.jpg') }}" class="d-block w-100" alt="Reading Image 2">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Interactive Learning</h5>
-                    <p>Engage with interactive tools.</p>
-                </div>
-            </div>
-            <div class="carousel-item">
-                <img src="{{ url_for('static', filename='images/reading3.jpg') }}" class="d-block w-100" alt="Reading Image 3">
-                <div class="carousel-caption d-none d-md-block">
-                    <h5>Supportive Environment</h5>
-                    <p>We are here to help you read better.</p>
-                </div>
-            </div>
+          {% endfor %}
         </div>
-        <a class="carousel-control-prev" href="#welcomeCarousel" role="button" data-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="sr-only">Previous</span>
-        </a>
-        <a class="carousel-control-next" href="#welcomeCarousel" role="button" data-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="sr-only">Next</span>
-        </a>
-    </div>
+      {% endif %}
+    {% endwith %}
 
     <!-- Upload Form -->
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <form method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label for="file"><i class="fas fa-upload"></i> Upload Text File:</label>
-                    <input type="file" name="file" class="form-control-file" accept=".txt">
-                </div>
-                <div class="form-group">
-                    <label for="text"><i class="fas fa-pencil-alt"></i> Or Enter Text:</label>
-                    <textarea name="text" class="form-control" rows="5"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block btn-lg">Submit</button>
-            </form>
-        </div>
+    <div class="upload-form">
+        <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data" aria-label="Upload Text File">
+            <label for="file">📂 Upload TXT or PDF file:</label>
+            <input type="file" id="file" name="file" accept=".txt, .pdf" required aria-required="true">
+
+            <!-- Language Selector for Upload -->
+            <label for="upload-language">🗣️ Select Upload Language:</label>
+            <select id="upload-language" name="upload_language" aria-label="Select Language for Upload">
+                {% for code, name in languages.items() %}
+                    <option value="{{ code }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Upload</button>
+        </form>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Language Selection for Display -->
+    <div class="language-selector">
+        <label for="display-language">🗣️ Select Display Language: </label>
+        <select id="display-language" aria-label="Select Display Language">
+            {% for code, name in languages.items() %}
+                <option value="{{ code }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button id="theme-toggle-btn" aria-label="Toggle Theme">🌙 Dark Mode</button>
+    </div>
+
+    <!-- Font Size Adjustment -->
+    <div class="font-size-adjust">
+        <button onclick="changeFontSize('increase')" aria-label="Increase Font Size">🔍 A+</button>
+        <button onclick="changeFontSize('decrease')" aria-label="Decrease Font Size">🔎 A-</button>
+    </div>
+
+
+    <!-- Line Guide Toggle Button -->
+    <div class="line-guide-toggle">
+        <button id="toggle-line-guide" aria-label="Toggle Line Guide">📏 Show Line Guide</button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <input type="text" id="search-input" placeholder="🔍 Search within text...">
+        <button onclick="searchText()">Search</button>
+    </div>
+
+
+    <!-- Text Display -->
+    <div id="text-container" aria-live="polite">
+        <div class="text-wrapper">
+            <!-- Content populated by JavaScript -->
+        </div>
+        <div class="line-guide"></div>
+    </div>
+
+    <!-- Read Full Text, Pause/Play, and Stop Buttons -->
+    <div class="read-full-text-container">
+        <button class="read-full-text" onclick="readFullText()" aria-label="Read Full Text">🔊 Read Full Text</button>
+        <button class="pause-play-full-text" onclick="pausePlayFullText()" aria-label="Pause Reading Full Text">⏸️ Pause</button>
+        <button class="stop-full-text" onclick="stopFullText()" aria-label="Stop Reading Full Text">⏹️ Stop</button>
+    </div>
+
+    <!-- Spinner for Loading -->
+    <div id="spinner" class="spinner" aria-hidden="true"></div>
+
+    <div id="image-container"></div>
+
+    <!-- JavaScript Files -->
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script>
+        // Pass Flask variables to JavaScript
+        window.currentTexts = {{ current_text | tojson }};
+        window.languages = {{ languages | tojson }};
+    </script>
+</body>
+</html>

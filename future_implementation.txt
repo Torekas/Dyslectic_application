@@ -1,0 +1,675 @@
+script.js
+
+// scripts.js
+
+// Theme Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    const body = document.body;
+
+    // Check for saved theme in localStorage
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') {
+        body.classList.add('dark-mode');
+    }
+
+    themeToggleBtn.textContent = body.classList.contains('dark-mode') ? '☀️ Light Mode' : '🌙 Dark Mode';
+
+    themeToggleBtn.addEventListener('click', () => {
+        body.classList.toggle('dark-mode');
+        const theme = body.classList.contains('dark-mode') ? 'dark' : 'light';
+        localStorage.setItem('theme', theme);
+        themeToggleBtn.textContent = theme === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+    });
+});
+
+// Function to update displayed text based on selected language
+function updateTextDisplay() {
+    const language = document.getElementById('display-language').value;
+    const textContainer = document.getElementById('text-container');
+    const textWrapper = textContainer.querySelector('.text-wrapper');
+    textWrapper.innerHTML = ''; // Clear existing text
+
+    const text = window.currentTexts[language] || "";
+    const paragraphs = text.split(/\n\s*\n/); // Split by empty lines
+
+    paragraphs.forEach(paragraph => {
+        const p = document.createElement('p');
+        const words = paragraph.split(/\s+/); // Split by whitespace
+        words.forEach(word => {
+            // Regex to check if the word is purely numerical (e.g., "123", "4567")
+            const isNumber = /^\d+$/.test(word);
+
+            if (isNumber) {
+                // Render numerical words as styled plain text
+                const span = document.createElement('span');
+                span.textContent = word + ' ';
+                span.classList.add('numerical-word'); // Add CSS class
+                p.appendChild(span);
+            } else {
+                // Render non-numerical words as clickable spans for TTS
+                const span = document.createElement('span');
+                span.textContent = word;
+                span.onclick = () => readWord(word, span);
+                span.tabIndex = 0; // Make span focusable for accessibility
+                span.setAttribute('role', 'button');
+                span.setAttribute('aria-label', `Read word: ${word}`);
+                p.appendChild(span);
+                p.appendChild(document.createTextNode(' ')); // Add space between words
+            }
+        });
+        textWrapper.appendChild(p);
+    });
+}
+
+// Listen for display language change
+document.getElementById('display-language').addEventListener('change', updateTextDisplay);
+
+// Initialize the text display based on the default selected language
+window.onload = updateTextDisplay;
+
+// Function to sanitize text by removing numbers and digits
+function sanitizeText(text) {
+    // Remove standalone numbers (e.g., "123")
+    // Also remove numbers attached to words (e.g., "Section 2.1" becomes "Section .")
+    return text.replace(/\d+/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Function to read a single word with punctuation handling
+function readWord(word, spanElement) {
+    const language = document.getElementById('display-language').value;
+
+    // Strip punctuation
+    const cleanWord = word.replace(/[.,!?;:()]/g, '');
+
+    if (cleanWord === '') return;
+
+    // Read the word via TTS
+    fetch('/read_word', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: cleanWord, language: language })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+            return;
+        }
+        const audio = new Audio(data.audio);
+        audio.play();
+        highlightWord(spanElement);
+
+        // Generate the image after reading the word
+        generateImage(cleanWord);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function generateImage(word) {
+    fetch('/generate_image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ word: word })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert(`Error: ${data.error}`);
+            return;
+        }
+
+        // Display the generated image
+        displayImage(data.image_url);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function displayImage(imageUrl) {
+    let imageContainer = document.getElementById('image-container');
+
+    if (!imageContainer) {
+        imageContainer = document.createElement('div');
+        imageContainer.id = 'image-container';
+        document.body.appendChild(imageContainer);
+    }
+
+    imageContainer.innerHTML = `<h3>Generated Image:</h3>
+                                <img src="${imageUrl}" alt="Generated Image" style="max-width: 100%; height: auto; border: 1px solid #ccc;">`;
+}
+
+
+
+
+// Global variables to manage full text audio and its state
+let fullTextAudio = null;
+let isFullTextPaused = false;
+
+// Function to read the full text
+function readFullText() {
+    const language = document.getElementById('display-language').value;
+    toggleSpinner(true);
+
+    // If there's an existing fullTextAudio playing or paused, stop it before starting a new one
+    if (fullTextAudio) {
+        fullTextAudio.pause();
+        fullTextAudio.currentTime = 0;
+        fullTextAudio = null;
+    }
+
+    // Get the current text
+    const originalText = window.currentTexts[language] || "";
+    const sanitizedText = sanitizeText(originalText);
+
+    // Send the sanitized text to the server instead of the original
+    fetch('/read_text', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ language: language, text: sanitizedText })
+    })
+    .then(response => response.json())
+    .then(data => {
+        toggleSpinner(false);
+        if(data.error){
+            alert(`Error: ${data.error}`);
+            return;
+        }
+        fullTextAudio = new Audio(data.audio);
+        fullTextAudio.play();
+        isFullTextPaused = false;
+        updatePausePlayButton(); // Set button to 'Pause'
+
+        fullTextAudio.onended = () => {
+            fullTextAudio = null;
+            isFullTextPaused = false;
+            updatePausePlayButton(); // Reset button to 'Pause'
+            toggleSpinner(false);
+        };
+    })
+    .catch(error => {
+        toggleSpinner(false);
+        console.error('Error:', error);
+    });
+}
+
+// Function to pause or play the full text audio
+function pausePlayFullText() {
+    if (!fullTextAudio) {
+        // No audio is currently playing
+        return;
+    }
+
+    if (isFullTextPaused) {
+        // Resume playback
+        fullTextAudio.play();
+        isFullTextPaused = false;
+    } else {
+        // Pause playback
+        fullTextAudio.pause();
+        isFullTextPaused = true;
+    }
+
+    updatePausePlayButton();
+}
+
+// Function to stop the full text reading
+function stopFullText() {
+    if (fullTextAudio) {
+        fullTextAudio.pause();
+        fullTextAudio.currentTime = 0;
+        fullTextAudio = null;
+        isFullTextPaused = false;
+        updatePausePlayButton(); // Reset button to 'Pause'
+        toggleSpinner(false);
+    }
+}
+
+// Function to highlight a word during audio playback
+function highlightWord(spanElement) {
+    // Remove existing highlights
+    document.querySelectorAll('.text-wrapper span').forEach(span => {
+        span.classList.remove('highlight');
+    });
+
+    // Add highlight to the selected word
+    spanElement.classList.add('highlight');
+
+    // Remove highlight after a short delay (e.g., 1 second)
+    setTimeout(() => {
+        spanElement.classList.remove('highlight');
+    }, 1000); // Highlight lasts for 1 second
+}
+
+// Function to show/hide spinner
+function toggleSpinner(show) {
+    if (show) {
+        document.body.classList.add('loading');
+    } else {
+        document.body.classList.remove('loading');
+    }
+}
+
+// Function to update the Pause/Play button based on playback state
+function updatePausePlayButton() {
+    const pausePlayBtn = document.querySelector('.pause-play-full-text');
+    if (isFullTextPaused) {
+        pausePlayBtn.textContent = '▶️ Play';
+        pausePlayBtn.setAttribute('aria-label', 'Play Reading Full Text');
+    } else {
+        pausePlayBtn.textContent = '⏸️ Pause';
+        pausePlayBtn.setAttribute('aria-label', 'Pause Reading Full Text');
+    }
+}
+
+// Function to search within text
+function searchText() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    const spans = document.querySelectorAll('.text-wrapper span');
+
+    // Clear previous search highlights
+    spans.forEach(span => {
+        span.classList.remove('search-highlight');
+    });
+
+    if (query === '') return;
+
+    spans.forEach(span => {
+        if (span.textContent.toLowerCase().includes(query)) {
+            span.classList.add('search-highlight');
+        }
+    });
+}
+
+// Function to change font size
+// Function to change font size for the text container
+function changeFontSize(action) {
+    const textWrapper = document.querySelector('#text-container .text-wrapper');
+    const style = window.getComputedStyle(textWrapper);
+    let currentSize = parseFloat(style.fontSize); // Get the current font size in px
+
+    // Define minimum and maximum font size
+    const minFontSize = 12;
+    const maxFontSize = 36;
+
+    if (action === 'increase' && currentSize < maxFontSize) {
+        currentSize += 2; // Increase font size by 2px
+    } else if (action === 'decrease' && currentSize > minFontSize) {
+        currentSize -= 2; // Decrease font size by 2px
+    }
+
+    // Apply the new font size
+    textWrapper.style.fontSize = `${currentSize}px`;
+}
+
+
+/* Line Guide Toggle Functionality with Persistence */
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleLineGuideBtn = document.getElementById('toggle-line-guide');
+    const textContainer = document.getElementById('text-container');
+    let lineGuideActive = localStorage.getItem('lineGuideActive') === 'true';
+    let lineGuide = null;
+
+    if (lineGuideActive) {
+        toggleLineGuideBtn.textContent = '📏 Hide Line Guide';
+        // Create and append the line guide element
+        lineGuide = textContainer.querySelector('.line-guide');
+        // Add mousemove and touchmove event listeners with throttling
+        textContainer.addEventListener('mousemove', throttle(handleCursorMove, 20));
+        textContainer.addEventListener('touchmove', throttle(handleCursorMove, 20));
+    } else {
+        toggleLineGuideBtn.textContent = '📏 Show Line Guide';
+    }
+
+    toggleLineGuideBtn.addEventListener('click', () => {
+        lineGuideActive = !lineGuideActive;
+        localStorage.setItem('lineGuideActive', lineGuideActive);
+        if (lineGuideActive) {
+            toggleLineGuideBtn.textContent = '📏 Hide Line Guide';
+            // Ensure the line guide element exists
+            if (!lineGuide) {
+                lineGuide = document.createElement('div');
+                lineGuide.classList.add('line-guide');
+                textContainer.appendChild(lineGuide);
+            }
+
+            // Add mousemove and touchmove event listeners
+            textContainer.addEventListener('mousemove', throttle(handleCursorMove, 20));
+            textContainer.addEventListener('touchmove', throttle(handleCursorMove, 20));
+        } else {
+            toggleLineGuideBtn.textContent = '📏 Show Line Guide';
+            // Remove the line guide element if desired, or hide it
+            if (lineGuide) {
+                textContainer.removeChild(lineGuide);
+                lineGuide = null;
+            }
+            // Remove mousemove and touchmove event listeners
+            textContainer.removeEventListener('mousemove', handleCursorMove);
+            textContainer.removeEventListener('touchmove', handleCursorMove);
+        }
+
+        // Update accessibility attributes
+        const status = lineGuideActive ? 'activated' : 'deactivated';
+        toggleLineGuideBtn.setAttribute('aria-pressed', lineGuideActive);
+        toggleLineGuideBtn.setAttribute('aria-label', `Toggle Line Guide, currently ${status}`);
+    });
+
+    function handleCursorMove(event) {
+        if (!lineGuide) return;
+
+        const rect = textContainer.getBoundingClientRect();
+        let y;
+
+        if (event.type.startsWith('touch')) {
+            if (event.touches.length === 0) return;
+            y = event.touches[0].clientY - rect.top;
+        } else {
+            y = event.clientY - rect.top;
+        }
+
+        // Position the line-guide vertically within the text container
+        y += textContainer.scrollTop;
+        lineGuide.style.top = `${y}px`;
+    }
+
+
+    // Throttle function to improve performance
+    function throttle(func, limit) {
+        let lastFunc;
+        let lastRan;
+        return function(...args) {
+            const context = this;
+            if (!lastRan) {
+                func.apply(context, args);
+                lastRan = Date.now();
+            } else {
+                clearTimeout(lastFunc);
+                lastFunc = setTimeout(function() {
+                    if ((Date.now() - lastRan) >= limit) {
+                        func.apply(context, args);
+                        lastRan = Date.now();
+                    }
+                }, limit - (Date.now() - lastRan));
+            }
+        }
+    }
+});
+
+
+app.py
+
+import os
+import uuid
+import threading
+import time
+from flask import Flask, render_template, request, send_from_directory, jsonify, redirect, url_for, flash, send_file
+import requests
+from gtts import gTTS
+from PyPDF2 import PdfReader
+from werkzeug.utils import secure_filename
+import sys
+import io
+
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+OLLAMA_API_URL = "http://localhost:11434/api/generate"  # Update if needed
+
+
+app = Flask(__name__)
+app.secret_key = 'your_secure_secret_key'  # Replace with a secure key in production
+
+# Supported languages with their full names
+SUPPORTED_LANGUAGES = {
+    'en': "English",
+    'pl': "Polski"
+}
+
+# Initialize current texts with default samples
+CURRENT_TEXT = {
+    'en': "This is a simple Flask application to read a word or the entire text.",
+    'pl': "To jest prosta aplikacja Flask do odczytywania pojedynczych słów lub całego tekstu."
+}
+
+# Temporary directories
+TEMP_DIR = 'temp_audio'
+UPLOAD_DIR = 'uploads'
+os.makedirs(TEMP_DIR, exist_ok=True)
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+def extract_text_from_pdf(pdf_path):
+    try:
+        reader = PdfReader(pdf_path)
+        text = ""
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n\n"  # Double newline for paragraph separation
+        return text.strip()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {e}")
+        return None
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html', languages=SUPPORTED_LANGUAGES, current_text=CURRENT_TEXT)
+
+
+@app.route('/generate_image', methods=['POST'])
+def generate_image():
+    """Generates an image based on the chosen word using Ollama."""
+    data = request.get_json()
+    word = data.get('word', '').strip()
+
+    if not word:
+        return jsonify({"error": "No word provided"}), 400
+
+    try:
+        # Create a descriptive prompt for Ollama's model
+        prompt = f"Generate an image visually representing the word '{word}' in high detail."
+
+        # Call Ollama's API for image generation
+        response = requests.post(
+            OLLAMA_API_URL,
+            json={"model": "llava", "prompt": prompt},  # Ensure 'llava' is the correct image model
+        )
+
+        # Debugging: Print response status and content
+        print(f"Ollama API Response Status: {response.status_code}")
+        print(f"Ollama API Response Content: {response.text}")
+
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to generate image"}), 500
+
+        response_json = response.json()
+
+        # Check if 'image' key exists in the response
+        if 'image' not in response_json:
+            return jsonify({"error": "No image data returned"}), 500
+
+        image_data = response_json['image']
+
+        # Determine the format of image_data
+        if isinstance(image_data, str):
+            # Assuming base64-encoded image
+            try:
+                image_bytes = base64.b64decode(image_data)
+            except Exception as e:
+                print(f"Error decoding base64 image data: {e}")
+                return jsonify({"error": "Invalid image data received"}), 500
+        elif isinstance(image_data, bytes):
+            # Binary image data
+            image_bytes = image_data
+        else:
+            return jsonify({"error": "Unsupported image data format"}), 500
+
+        # Save the image to a file
+        image_filename = f"{uuid.uuid4()}.png"
+        image_path = os.path.join(TEMP_DIR, image_filename)
+        with open(image_path, "wb") as f:
+            f.write(image_bytes)
+
+        return jsonify({"image_url": f"/play_image/{image_filename}"})
+
+    except Exception as e:
+        print(f"Error generating image: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/play_image/<filename>')
+def play_image(filename):
+    """Serves the generated image file."""
+    return send_file(os.path.join(TEMP_DIR, filename), mimetype='image/png')
+
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    global CURRENT_TEXT
+    if 'file' not in request.files:
+        flash('No file part in the request.', 'error')
+        return redirect(url_for('index'))
+
+    file = request.files['file']
+    upload_language = request.form.get('upload_language', 'en')  # Correctly matches 'upload_language'
+
+    print(f"Received upload_language: {upload_language}")  # Debug Statement
+
+    if upload_language not in SUPPORTED_LANGUAGES:
+        flash('Unsupported language selected.', 'error')
+        return redirect(url_for('index'))
+
+    if file.filename == '':
+        flash('No file selected for uploading.', 'error')
+        return redirect(url_for('index'))
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(UPLOAD_DIR, filename)
+        file.save(file_path)
+
+        # Extract text based on file type
+        if filename.lower().endswith('.txt'):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    text = f.read()
+                print(f"Extracted text from TXT: {text[:50]}...")  # Debug Statement
+            except Exception as e:
+                flash(f'Error reading TXT file: {e}', 'error')
+                os.remove(file_path)
+                return redirect(url_for('index'))
+        elif filename.lower().endswith('.pdf'):
+            text = extract_text_from_pdf(file_path)
+            if text is None:
+                flash('Failed to extract text from PDF.', 'error')
+                os.remove(file_path)
+                return redirect(url_for('index'))
+            print(f"Extracted text from PDF: {text[:50]}...")  # Debug Statement
+        else:
+            flash('Unsupported file format.', 'error')
+            os.remove(file_path)
+            return redirect(url_for('index'))
+
+        # Update CURRENT_TEXT for the selected language
+        if text:
+            CURRENT_TEXT[upload_language] = text
+            print(f"Updated CURRENT_TEXT['{upload_language}'] with uploaded text.")  # Debug Statement
+            print(f"CURRENT_TEXT after upload: {CURRENT_TEXT}")  # Debug Statement
+            flash('File successfully uploaded and text extracted.', 'success')
+        else:
+            flash('No text found in the uploaded file.', 'error')
+
+        # Remove the uploaded file after processing
+        os.remove(file_path)
+    else:
+        flash('Allowed file types are TXT and PDF.', 'error')
+
+    return redirect(url_for('index'))
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'txt', 'pdf'}
+
+
+@app.route('/read_word', methods=['POST'])
+def read_word():
+    data = request.get_json()
+    word = data.get('word')
+    language = data.get('language', 'en')  # Default to English if not provided
+
+    if not word:
+        return jsonify({"error": "No word provided"}), 400
+
+    if language not in SUPPORTED_LANGUAGES:
+        return jsonify({"error": "Unsupported language"}), 400
+
+    # Generate a unique filename for the audio file
+    filename = f"{uuid.uuid4()}.mp3"
+    filepath = os.path.join(TEMP_DIR, filename)
+
+    try:
+        # Generate the TTS audio
+        tts = gTTS(text=word, lang=language)
+        tts.save(filepath)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    # Return a unique URL for the audio file
+    return jsonify({"audio": f"/play_audio/{filename}"})
+
+
+@app.route('/read_text', methods=['POST'])
+def read_text():
+    data = request.get_json()
+    language = data.get('language', 'en')  # Default to English if not provided
+    text = data.get('text', '')  # Get the sanitized text from the client
+
+    if language not in SUPPORTED_LANGUAGES:
+        return jsonify({"error": "Unsupported language"}), 400
+
+    if not text.strip():
+        return jsonify({"error": "No text available for the selected language."}), 400
+
+    # Generate a unique filename for the full text audio
+    filename = f"{uuid.uuid4()}.mp3"
+    filepath = os.path.join(TEMP_DIR, filename)
+
+    try:
+        # Generate the TTS audio for the sanitized text
+        tts = gTTS(text=text, lang=language)
+        tts.save(filepath)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    # Return a unique URL for the full text audio
+    return jsonify({"audio": f"/play_audio/{filename}"})
+
+
+@app.route('/play_audio/<filename>')
+def play_audio(filename):
+    # Serve the generated MP3 file
+    return send_from_directory(TEMP_DIR, filename)
+
+
+def cleanup_temp_audio():
+    """Delete audio files older than 10 minutes every 5 minutes."""
+    while True:
+        now = time.time()
+        for filename in os.listdir(TEMP_DIR):
+            file_path = os.path.join(TEMP_DIR, filename)
+            if os.path.isfile(file_path):
+                # Delete files older than 10 minutes (600 seconds)
+                if now - os.path.getmtime(file_path) > 600:
+                    try:
+                        os.remove(file_path)
+                        print(f"Deleted old audio file: {filename}")
+                    except Exception as e:
+                        print(f"Error deleting file {filename}: {e}")
+        time.sleep(300)  # Wait for 5 minutes before next cleanup
+
+
+# Start the cleanup thread
+cleanup_thread = threading.Thread(target=cleanup_temp_audio, daemon=True)
+cleanup_thread.start()
+
+if __name__ == '__main__':
+    app.run(debug=True, threaded=False)  # Ensure single-threaded for debugging

@@ -1,0 +1,340 @@
+/* Import Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap');
+
+@font-face {
+    font-family: 'CustomFont';
+    src: url('/static/fonts/OpenDyslexic-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* CSS Variables for Easy Theming */
+:root {
+    --primary-bg: #FAF3E0;
+    --secondary-bg: #F5EBDD;
+    --accent-color: #A67B5B;
+    --text-color: #333333;
+    --button-bg: #6CA0DC;
+    --button-hover-bg: #6190C6; /* 10% Darker Shade */
+    --button-text: #FFFFFF;
+    --highlight-color: #F2A65A;
+    --font-primary: 'CustomFont';
+    --font-accent: 'CustomFont';
+    --font-size-base: 16px;
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* Global Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+    font-family: var(--font-primary);
+    font-size: var(--font-size-base);
+    line-height: 1.6;
+    padding: 20px;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* Apply Custom Font to All Buttons and Selects */
+button, select, input[type="button"], input[type="submit"] {
+    font-family: 'CustomFont', Arial, sans-serif;
+}
+
+/* Optional: Apply to Other Form Elements */
+input, textarea {
+    font-family: 'CustomFont', Arial, sans-serif;
+}
+
+h1 {
+    font-family: var(--font-accent);
+    color: var(--accent-color);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Flash Messages */
+.flash-messages {
+    margin-bottom: 20px;
+}
+
+.flash-message {
+    background-color: var(--secondary-bg);
+    border-left: 4px solid var(--highlight-color);
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.flash-message p {
+    font-size: 1rem;
+}
+
+/* Upload Form */
+.upload-form {
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.upload-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.upload-form label {
+    font-weight: 700;
+}
+
+.upload-form input[type="file"],
+.upload-form select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-family: var(--font-primary);
+    font-size: 1rem;
+}
+
+.upload-form button {
+    align-self: flex-start;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.upload-form button:hover {
+    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+    transform: translateY(-2px);
+}
+
+/* Language Selector & Other Controls */
+.language-selector,
+.theme-toggle,
+.font-size-adjust,
+.line-guide-toggle,
+.search-bar {
+    margin-bottom: 20px;
+}
+
+.language-selector label,
+.theme-toggle button,
+.font-size-adjust button,
+.line-guide-toggle button,
+.search-bar input,
+.search-bar button {
+    font-size: 1rem;
+}
+
+.language-selector select,
+.search-bar input {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    font-family: var(--font-primary);
+}
+
+.theme-toggle button,
+.font-size-adjust button,
+.line-guide-toggle button,
+.search-bar button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.theme-toggle button:hover,
+.font-size-adjust button:hover,
+.line-guide-toggle button:hover,
+.search-bar button:hover {
+    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+    transform: translateY(-2px);
+}
+
+/* Search Bar */
+.search-bar {
+    display: flex;
+    gap: 10px;
+}
+
+.search-bar input {
+    flex: 1;
+}
+
+.search-bar button {
+    flex-shrink: 0;
+}
+
+/* Text Display */
+#text-container {
+    position: relative;
+    background-color: var(--secondary-bg);
+    padding: 20px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.text-wrapper p {
+    margin-bottom: 1.5em;
+    line-height: 1.8;
+}
+
+.text-wrapper span {
+    cursor: pointer;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+.text-wrapper span:hover,
+.text-wrapper span:focus {
+    background-color: var(--highlight-color);
+    color: var(--button-text);
+    outline: none;
+    border-radius: 4px;
+}
+
+.highlight {
+    background-color: var(--highlight-color);
+    color: var(--button-text);
+    border-radius: 4px;
+}
+
+/* Line Guide */
+.line-guide {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background-color: rgba(242, 166, 90, 0.7); /* Soft Orange */
+    pointer-events: none;
+    z-index: 1;
+    top: 0; /* Initial Position */
+    transition: top var(--transition-speed);
+}
+
+/* Read Full Text Controls */
+.read-full-text-container {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.read-full-text-container button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.read-full-text-container button:hover {
+    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+    transform: translateY(-2px);
+}
+
+/* Spinner */
+.spinner {
+    border: 4px solid var(--secondary-bg);
+    border-top: 4px solid var(--highlight-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none; /* Hidden by default */
+    z-index: 1000;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Loading State */
+body.loading #spinner {
+    display: block;
+}
+
+/* Button Active State for Pause/Play */
+.pause-play-full-text.highlighted {
+    background-color: var(--highlight-color);
+    color: var(--button-text);
+}
+
+/* Dark Mode */
+body.dark-mode {
+    --primary-bg: #2E2E2E;
+    --secondary-bg: #3C3C3C;
+    --accent-color: #A67B5B;
+    --text-color: #EEEEEE;
+    --button-bg: #6CA0DC;
+    --button-hover-bg: #6190C6; /* Darker Shade for Dark Mode */
+    --highlight-color: #F2A65A;
+}
+
+body.dark-mode .flash-message {
+    background-color: #4C4C4C;
+    border-left: 4px solid var(--highlight-color);
+}
+
+body.dark-mode .line-guide {
+    background-color: rgba(242, 166, 90, 0.7);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .upload-form form {
+        flex-direction: column;
+    }
+
+    .read-full-text-container {
+        flex-direction: column;
+    }
+
+    .search-bar {
+        flex-direction: column;
+    }
+}
+
+/* Default font size for text-wrapper */
+#text-container .text-wrapper {
+    font-size: 16px; /* Default font size */
+    transition: font-size 0.3s ease; /* Smooth size change */
+    white-space: pre-wrap; /* Preserve spaces, indentation, and line breaks */
+    word-wrap: break-word; /* Ensure long words wrap within the container */
+    font-family: var(--font-primary); /* Apply your custom font */
+}
+
+
+.text-wrapper span.search-highlight {
+    background-color: #81c784;
+    border-radius: 3px;
+    padding: 2px 4px;
+    color: #fff;
+}
+
