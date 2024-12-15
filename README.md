@@ -130,7 +130,7 @@ dyslexia-friendly-reader/
 │   ├── js/
 │   │   └── scripts.js
 │   ├── fonts/
-│   │   └── CustomFont.ttf
+│   │   └── OpenDyslexic-Regular.ttf
 │   └── images/
 │       ├── reading1.jpg
 │       ├── reading2.jpg
