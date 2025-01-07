@@ -1,8 +1,6 @@
----
-
 # Dyslexia-Friendly Reader Web App
 
-A web application designed to assist dyslexic children in reading and comprehension by providing tools like a custom dyslexia-friendly font, text-to-speech functionality, an interactive reading ruler, adjustable font sizes, and a robust search feature.
+A web application designed to assist dyslexic children in age 4-11 in reading and comprehension by providing tools like a custom dyslexia-friendly font, text-to-speech functionality, an interactive reading ruler, adjustable font sizes, robust search feature, and interactive image pop-ups to helps visualise and create memos for meaning of words. Additional feature is that, you can learn the pronunciation of words in many languages like English, Deutsch, Italiano or French.
 
 ## Table of Contents
 
@@ -16,6 +14,7 @@ A web application designed to assist dyslexic children in reading and comprehens
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 - [Security and Privacy](#security-and-privacy)
+- [Additional Notes](#additional-notes)
 
 ---
 
@@ -31,6 +30,8 @@ A web application designed to assist dyslexic children in reading and comprehens
   - **Ruler Toggle**: Show or hide the interactive reading ruler.
 - **Search Functionality**: Search for specific words within the uploaded text and highlight all matching occurrences.
 - **Theme Toggle**: Switch between light and dark modes to reduce eye strain.
+- **Interactive Image Pop-ups**: Clickable words trigger pop-up modals displaying relevant images to aid comprehension.
+- **Division into syllables**: Helps to enhance the reading skills.
 - **Accessibility Enhancements**:
   - Keyboard navigable controls.
   - ARIA attributes for screen reader compatibility.
@@ -47,15 +48,15 @@ A web application designed to assist dyslexic children in reading and comprehens
 
 ### Prerequisites
 
-- **Python 3.x**
+- **Python 3.12**
 - **pip** (Python package installer)
 - **Virtual Environment** (optional but recommended)
 
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/dyslexia-friendly-reader.git
-cd dyslexia-friendly-reader
+https://github.com/Torekas/Dyslectic_application.git
+cd Dyslectic_application
 ```
 
 ### Create a Virtual Environment (Optional)
@@ -73,8 +74,13 @@ pip install -r requirements.txt
 
 ### Download the Custom Font
 
-- Download a dyslexia-friendly font like [OpenDyslexic](https://opendyslexic.org/) or use the provided `CustomFont.ttf`.
+- Download a dyslexia-friendly font like [OpenDyslexic](https://opendyslexic.org/) or use the provided `OpenDyslexic-Regular.ttf`.
 - Place the font file in the `static/fonts/` directory.
+
+### Additional Setup for Image Pop-ups
+
+- Ensure that images corresponding to specific words are placed in the `static/images/` directory.
+- Image filenames should exactly match the words they represent (case-sensitive if on a case-sensitive filesystem).
 
 ---
 
@@ -94,7 +100,7 @@ python app.py
 
 1. **Home Page**:
    - **Upload Text File**: Click on the **"Upload TXT or PDF file"** button to upload your text.
-   - **Select Upload Language**: Choose the language corresponding to the uploaded text.
+   - **Select Upload Language**: Choose the language corresponding to the uploaded text. Helps also to learn pronunciation!
    - **Submit**: Click the **"Upload"** button to process the file.
 
 2. **Display Page**:
@@ -113,6 +119,8 @@ python app.py
    - **Search Functionality**:
      - **Search Bar**: Enter a word in the search input and click **"Search"** to highlight all occurrences.
      - **Search Feedback**: View messages indicating the number of matches found or if no matches exist.
+   - **Interactive Image Pop-ups**:
+     - **Click on Visualizable Words**: Click on specific words to open a modal pop-up displaying relevant images to aid comprehension.
 
 ---
 
@@ -132,9 +140,17 @@ dyslexia-friendly-reader/
 │   ├── fonts/
 │   │   └── OpenDyslexic-Regular.ttf
 │   └── images/
-│       ├── reading1.jpg
-│       ├── reading2.jpg
-│       └── reading3.jpg
+│       ├── Ania.png
+│       ├── łóżka.png
+│       ├── umyje.png
+│       ├── je.png
+│       ├── plecak.png
+│       ├── szkoły.png
+│       ├── przyrody.png
+│       ├── przyjaciółmi.png
+│       ├── zadania.png
+│       ├── czyta.png
+│       └── ... inne obrazki ...
 └── README.md
 ```
 
@@ -145,8 +161,8 @@ dyslexia-friendly-reader/
 - **static/**: Contains static files like CSS, JavaScript, fonts, and images.
   - **css/styles.css**: Stylesheet for the application.
   - **js/scripts.js**: JavaScript file managing interactivity and functionalities.
-  - **fonts/CustomFont.ttf**: Custom dyslexia-friendly font.
-  - **images/**: Contains images used in the README and application.
+  - **fonts/OpenDyslexic-Regular.ttf**: Custom dyslexia-friendly font.
+  - **images/**: Contains images used in the application for visualizable words.
 - **README.md**: Project documentation.
 
 ---
@@ -157,9 +173,11 @@ dyslexia-friendly-reader/
 
 ![Home Page](static/images/Update_1_home_page.png)
 
-### Display Page with Reading Ruler
+### Display Page with Reading Ruler and Image Pop-up
 
 ![Display Page](static/images/features.png)
+
+![Image Pop-up](static/images/image_popup_example.png)
 
 ---
 
@@ -208,6 +226,7 @@ This project is licensed under the [MIT License](LICENSE).
 - **Font Awesome**: For the icons used in the application.
 - **Google Fonts**: For providing a variety of high-quality fonts.
 - **Bootstrap**: For facilitating responsive design (if used).
+- **Micromodal**: For lightweight modal implementations.
 
 ---
 
@@ -225,6 +244,9 @@ This project is licensed under the [MIT License](LICENSE).
 - **Scalability**: Implement background task queues (e.g., Celery) for handling intensive tasks like large file processing or TTS generation.
 - **Error Handling**: Enhance error handling to provide more user-friendly messages and log errors for debugging.
 - **Accessibility**: Continue to prioritize accessibility by adhering to WCAG guidelines and conducting user testing with individuals who have dyslexia.
-- **Ollama implementation**: Now we are working on the implementation of Ollama AI model into aour app to generate the images basing on the chosen word, in the next release it will be implemented.
+- **Ollama Implementation**: We are currently working on integrating the Ollama AI model into our app to dynamically generate images based on selected words. This feature will be available in the next release.
+- **Lazy Loading Images**: To improve performance, especially with a large number of images, consider implementing lazy loading techniques.
+- **Modal Animations**: Add subtle animations to modal pop-ups for a smoother user experience.
 
 ---
+

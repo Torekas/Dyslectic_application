@@ -1,3 +1,5 @@
+# app.py
+
 import os
 import uuid
 import threading
@@ -8,24 +10,54 @@ from PyPDF2 import PdfReader
 from werkzeug.utils import secure_filename
 import sys
 import io
+import pyphen  # Import pyphen
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
-
 
 app = Flask(__name__)
 app.secret_key = 'your_secure_secret_key'  # Replace with a secure key in production
 
-# Supported languages with their full names
+# Obsługiwane języki z ich pełnymi nazwami
 SUPPORTED_LANGUAGES = {
     'en': "English",
-    'pl': "Polski"
+    'pl': "Polski",
+    'es': "Español",
+    'de': "Deutsch",
+    'fr': "Français",
+    'it': "Italiano",
+    'pt': "Português",
+    'ru': "Русский",
+    'ja': "日本語",
+    'zh-cn': "中文 (简体)",
+    'ar': "العربية",
+    # Dodaj więcej języków według potrzeb
 }
 
-# Initialize current texts with default samples
+# Inicjalizacja aktualnych tekstów z domyślnymi przykładami
 CURRENT_TEXT = {
     'en': "This is a simple Flask application to read a word or the entire text.",
-    'pl': "To jest prosta aplikacja Flask do odczytywania pojedynczych słów lub całego tekstu."
+    'pl': "Każdego ranka, Ania wstaje z łóżka. Najpierw umyje twarz i je śniadanie. Potem zakłada plecak i idzie do szkoły. W szkole Ania uczy się matematyki, języka polskiego oraz przyrody. Po lekcjach spotyka się ze przyjaciółmi na placu zabaw. Wieczorem Ania odrabia zadania domowe, czyta książkę i kładzie się do łóżka, aby odpocząć przed nowym dniem.",
+    'es': "Esta es una aplicación Flask sencilla para leer una palabra o todo el texto.",
+    'de': "Dies ist eine einfache Flask-Anwendung, um ein Wort oder den gesamten Text vorzulesen.",
+    'fr': "Ceci est une application Flask simple pour lire un mot ou tout le texte.",
+    'it': "Questa è una semplice applicazione Flask per leggere una parola o l'intero testo.",
+    'pt': "Este é um aplicativo Flask simples para ler uma palavra ou todo o texto.",
+    'ru': "Это простое приложение Flask для чтения слова или всего текста.",
+    'ja': "これは単語または全文を読むためのシンプルなFlaskアプリケーションです。",
+    'zh-cn': "这是一个简单的Flask应用程序，用于朗读单词或整个文本。",
+    'ar': "هذا تطبيق Flask بسيط لقراءة كلمة أو النص بالكامل.",
+    # Dodaj więcej języków według potrzeb
 }
+
+# Inicjalizacja słowników sylabowych
+DICTIONARIES = {}
+for lang_code in SUPPORTED_LANGUAGES.keys():
+    try:
+        DICTIONARIES[lang_code] = pyphen.Pyphen(lang=lang_code)
+        print(f"Słownik dla języka '{lang_code}' załadowany pomyślnie.")
+    except KeyError:
+        DICTIONARIES[lang_code] = None  # Obsłuż brak obsługi języka
+        print(f"Brak słownika dla języka '{lang_code}'.")
 
 # Temporary directories
 TEMP_DIR = 'temp_audio'
@@ -41,11 +73,27 @@ def extract_text_from_pdf(pdf_path):
         for page in reader.pages:
             page_text = page.extract_text()
             if page_text:
-                text += page_text + "\n\n"  # Double newline for paragraph separation
+                text += page_text + "\n\n"  # Podwójny nowy wiersz dla oddzielenia akapitów
         return text.strip()
     except Exception as e:
         print(f"Error extracting text from PDF: {e}")
         return None
+
+
+def syllabify_text(text, language):
+    dic = DICTIONARIES.get(language)
+    if not dic:
+        print(f"Słownik dla języka '{language}' nie jest dostępny. Zwracanie oryginalnego tekstu.")
+        return text  # Jeśli nie ma słownika dla języka, zwróć tekst bez zmian
+
+    words = text.split()
+    syllabified_words = []
+    for word in words:
+        # Użyj funkcji insert() z pyphen do podziału słowa na sylaby
+        syllables = dic.inserted(word)
+        syllabified_words.append(syllables)
+
+    return ' '.join(syllabified_words)
 
 
 @app.route('/', methods=['GET'])
@@ -61,7 +109,7 @@ def upload():
         return redirect(url_for('index'))
 
     file = request.files['file']
-    upload_language = request.form.get('upload_language', 'en')  # Correctly matches 'upload_language'
+    upload_language = request.form.get('upload_language', 'en')  # Poprawiona nazwa pola
 
     print(f"Received upload_language: {upload_language}")  # Debug Statement
 
@@ -125,7 +173,8 @@ def allowed_file(filename):
 def read_word():
     data = request.get_json()
     word = data.get('word')
-    language = data.get('language', 'en')  # Default to English if not provided
+    language = data.get('language', 'en')  # Domyślnie angielski
+    syllabify = data.get('syllabify', False)  # Nowa opcja
 
     if not word:
         return jsonify({"error": "No word provided"}), 400
@@ -133,46 +182,80 @@ def read_word():
     if language not in SUPPORTED_LANGUAGES:
         return jsonify({"error": "Unsupported language"}), 400
 
-    # Generate a unique filename for the audio file
+    if syllabify:
+        word = syllabify_text(word, language)
+
+    # Generuj unikalną nazwę pliku audio
     filename = f"{uuid.uuid4()}.mp3"
     filepath = os.path.join(TEMP_DIR, filename)
 
     try:
-        # Generate the TTS audio
+        # Generuj TTS audio
         tts = gTTS(text=word, lang=language)
         tts.save(filepath)
+        print(f"Generated TTS audio for word: {filename}")
     except Exception as e:
+        print(f"Error generating TTS audio: {e}")
         return jsonify({"error": str(e)}), 500
 
-    # Return a unique URL for the audio file
+    # Zwróć unikalny URL dla pliku audio
     return jsonify({"audio": f"/play_audio/{filename}"})
 
 
 @app.route('/read_text', methods=['POST'])
 def read_text():
     data = request.get_json()
-    language = data.get('language', 'en')  # Default to English if not provided
-    text = data.get('text', '')  # Get the sanitized text from the client
+    language = data.get('language', 'en')  # Domyślnie angielski
+    text = data.get('text', '')  # Pobierz przetworzony tekst
+    syllabify = data.get('syllabify', False)  # Nowa opcja
+
+    print(f"Received read_text request: language={language}, syllabify={syllabify}")
+    print(f"Text length: {len(text)}")
+
+    if language not in SUPPORTED_LANGUAGES:
+        print("Unsupported language.")
+        return jsonify({"error": "Unsupported language"}), 400
+
+    if not text.strip():
+        print("No text provided.")
+        return jsonify({"error": "No text available for the selected language."}), 400
+
+    if syllabify:
+        text = syllabify_text(text, language)
+        print(f"Syllabified text: {text[:50]}...")  # Print first 50 chars for brevity
+
+    # Generuj unikalną nazwę pliku audio
+    filename = f"{uuid.uuid4()}.mp3"
+    filepath = os.path.join(TEMP_DIR, filename)
+
+    try:
+        # Generuj TTS audio
+        tts = gTTS(text=text, lang=language)
+        tts.save(filepath)
+        print(f"Generated TTS audio for full text: {filename}")
+    except Exception as e:
+        print(f"Error generating TTS audio: {e}")
+        return jsonify({"error": str(e)}), 500
+
+    # Zwróć unikalny URL dla pliku audio
+    return jsonify({"audio": f"/play_audio/{filename}"})
+
+
+@app.route('/get_syllabified_text', methods=['POST'])
+def get_syllabified_text():
+    data = request.get_json()
+    language = data.get('language', 'en')  # Domyślnie angielski
+    text = data.get('text', '')  # Pobierz przetworzony tekst
 
     if language not in SUPPORTED_LANGUAGES:
         return jsonify({"error": "Unsupported language"}), 400
 
     if not text.strip():
-        return jsonify({"error": "No text available for the selected language."}), 400
+        return jsonify({"error": "No text provided"}), 400
 
-    # Generate a unique filename for the full text audio
-    filename = f"{uuid.uuid4()}.mp3"
-    filepath = os.path.join(TEMP_DIR, filename)
+    syllabified_text = syllabify_text(text, language)
 
-    try:
-        # Generate the TTS audio for the sanitized text
-        tts = gTTS(text=text, lang=language)
-        tts.save(filepath)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    # Return a unique URL for the full text audio
-    return jsonify({"audio": f"/play_audio/{filename}"})
+    return jsonify({"syllabified_text": syllabified_text})
 
 
 @app.route('/play_audio/<filename>')

@@ -338,3 +338,177 @@ body.dark-mode .line-guide {
     color: #fff;
 }
 
+/* Speed Control with Slider Styling */
+.speed-control {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.speed-control label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.speed-control input[type="range"] {
+    margin-right: 10px;
+}
+
+#speed-value {
+    font-weight: bold;
+}
+
+
+/* Phonetic Transcription Styling */
+.transcription {
+    font-style: italic;
+    color: #888;
+    margin-left: 5px;
+    font-size: 0.9em;
+}
+
+/* Obsługiwane języki */
+.language-selector {
+    margin-bottom: 20px;
+}
+
+.language-selector label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.language-selector select {
+    padding: 5px;
+    font-size: 1em;
+}
+
+/* Speed Control with Slider Styling */
+.speed-control {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.speed-control label {
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.speed-control input[type="range"] {
+    margin-right: 10px;
+}
+
+#speed-value {
+    font-weight: bold;
+}
+
+/* styles.css */
+
+.syllabify-option {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.syllabify-option label {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.syllabify-option input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* Stylizacja hyfacji */
+.text-wrapper span {
+    cursor: pointer;
+}
+
+.text-wrapper span.highlight {
+    background-color: yellow;
+}
+
+.text-wrapper span.search-highlight {
+    background-color: orange;
+}
+
+.text-wrapper span.numerical-word {
+    color: #555;
+}
+
+/* Stylizacja wizualizowalnych słów */
+.text-wrapper span.visualizable-word {
+    color: #007BFF;
+    cursor: pointer;
+}
+
+.text-wrapper span.visualizable-word:hover {
+    text-decoration: underline;
+}
+
+/* Opcjonalne: Stylizacja sylab */
+.text-wrapper span.syllable {
+    color: #007BFF; /* Niebieski kolor dla sylab */
+}
+
+
+/* Image Display */
+#image-container img {
+    max-width: 200px;
+    margin-top: 20px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Ukryty domyślnie */
+    position: fixed; /* Stała pozycja względem okna przeglądarki */
+    z-index: 1000; /* Warstwa na najwyższym poziomie */
+    left: 0;
+    top: 0;
+    width: 100%; /* Pełna szerokość */
+    height: 100%; /* Pełna wysokość */
+    overflow: auto; /* Scroll jeśli zawartość jest większa */
+    background-color: rgba(0, 0, 0, 0.8); /* Tło z przezroczystością */
+}
+
+/* Modal Content */
+.modal-content {
+    position: relative;
+    margin: 5% auto; /* Wyśrodkowanie modalnego okna */
+    padding: 20px;
+    width: 80%;
+    max-width: 500px; /* Maksymalna szerokość */
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    text-align: center;
+}
+
+/* Close Button */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+/* Modal Image */
+#modal-image {
+    width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
