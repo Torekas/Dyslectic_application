@@ -1,5 +1,7 @@
+# wsgi.py
+
 from app import app
 
 if __name__ == "__main__":
-    # It's generally not recommended to run the Flask development server in production
-    app.run()
+    from waitress import serve
+    serve(app, host='0.0.0.0', port=8080)
