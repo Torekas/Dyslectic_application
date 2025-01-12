@@ -1,0 +1,5 @@
+To run test disable 15 line in app.py file
+
+"""
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+"""

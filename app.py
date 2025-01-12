@@ -12,7 +12,7 @@ import sys
 import io
 import pyphen  # Import pyphen
 
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+# sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 app = Flask(__name__)
 app.secret_key = 'your_secure_secret_key'  # Replace with a secure key in production
