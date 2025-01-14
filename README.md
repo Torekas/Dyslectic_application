@@ -1,8 +1,8 @@
 # Dyslexia-Friendly Reader Web App
-
-## The aplication is now available on: 
-
+___
+### The aplication is now available on: 
 https://dyslectic-application.onrender.com
+___
 
 A web application designed to assist dyslexic children in age 4-11 in reading and comprehension by providing tools like a custom dyslexia-friendly font, text-to-speech functionality, an interactive reading ruler, adjustable font sizes, robust search feature, and interactive image pop-ups to helps visualise and create memos for meaning of words. Additional feature is that, you can learn the pronunciation of words in many languages like English, Deutsch, Italiano or French.
 
