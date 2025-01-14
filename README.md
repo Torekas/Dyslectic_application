@@ -1,13 +1,14 @@
 # Dyslexia-Friendly Reader Web App
 
-## The aplication is now available on: https://dyslectic-application.onrender.com
+## The aplication is now available on: 
+
+https://dyslectic-application.onrender.com
 
 A web application designed to assist dyslexic children in age 4-11 in reading and comprehension by providing tools like a custom dyslexia-friendly font, text-to-speech functionality, an interactive reading ruler, adjustable font sizes, robust search feature, and interactive image pop-ups to helps visualise and create memos for meaning of words. Additional feature is that, you can learn the pronunciation of words in many languages like English, Deutsch, Italiano or French.
 
 ## Table of Contents
 
 - [Features](#features)
-- [Demo](#demo)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Project Structure](#project-structure)
@@ -40,11 +41,6 @@ A web application designed to assist dyslexic children in age 4-11 in reading an
 
 ---
 
-## Demo
-
-[Live Demo Link](#) *(To be added)*
-
----
 
 ## Installation
 
@@ -124,6 +120,11 @@ python app.py
    - **Interactive Image Pop-ups**:
      - **Click on Visualizable Words**: Click on specific words to open a modal pop-up displaying relevant images to aid comprehension.
 
+## User UML Diagram
+
+![Technical UML Diagram](UML/User_UML.png)
+
+
 ---
 
 ## Project Structure
@@ -166,6 +167,10 @@ dyslexia-friendly-reader/
   - **fonts/OpenDyslexic-Regular.ttf**: Custom dyslexia-friendly font.
   - **images/**: Contains images used in the application for visualizable words.
 - **README.md**: Project documentation.
+
+## User UML Diagram
+
+![Technical UML Diagram](UML/Technical_UML.png)
 
 ---
 
