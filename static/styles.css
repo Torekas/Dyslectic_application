@@ -15,7 +15,7 @@
     --accent-color: #A67B5B;
     --text-color: #333333;
     --button-bg: #6CA0DC;
-    --button-hover-bg: #6190C6; /* 10% Darker Shade */
+    --button-hover-bg: #6190C6;
     --button-text: #FFFFFF;
     --highlight-color: #F2A65A;
     --font-primary: 'CustomFont';
@@ -42,12 +42,11 @@ body {
     transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 
-/* Apply Custom Font to All Buttons and Selects */
+/* Apply Custom Font to Buttons and Selects */
 button, select, input[type="button"], input[type="submit"] {
     font-family: 'CustomFont', Arial, sans-serif;
 }
 
-/* Optional: Apply to Other Form Elements */
 input, textarea {
     font-family: 'CustomFont', Arial, sans-serif;
 }
@@ -63,7 +62,6 @@ h1 {
 .flash-messages {
     margin-bottom: 20px;
 }
-
 .flash-message {
     background-color: var(--secondary-bg);
     border-left: 4px solid var(--highlight-color);
@@ -72,7 +70,6 @@ h1 {
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .flash-message p {
     font-size: 1rem;
 }
@@ -85,17 +82,14 @@ h1 {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     margin-bottom: 20px;
 }
-
 .upload-form form {
     display: flex;
     flex-direction: column;
     gap: 15px;
 }
-
 .upload-form label {
     font-weight: 700;
 }
-
 .upload-form input[type="file"],
 .upload-form select {
     padding: 10px;
@@ -104,7 +98,6 @@ h1 {
     font-family: var(--font-primary);
     font-size: 1rem;
 }
-
 .upload-form button {
     align-self: flex-start;
     background-color: var(--button-bg);
@@ -116,71 +109,63 @@ h1 {
     font-size: 1rem;
     transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
-
 .upload-form button:hover {
-    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+    background-color: var(--button-hover-bg);
     transform: translateY(-2px);
 }
 
-/* Language Selector & Other Controls */
-.language-selector,
-.theme-toggle,
-.font-size-adjust,
-.line-guide-toggle,
-.search-bar {
-    margin-bottom: 20px;
+/* Compact Top Bar */
+.top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
-
-.language-selector label,
-.theme-toggle button,
-.font-size-adjust button,
-.line-guide-toggle button,
-.search-bar input,
-.search-bar button {
-    font-size: 1rem;
+.top-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.9rem;
 }
-
-.language-selector select,
-.search-bar input {
-    padding: 8px;
+.top-bar-item label {
+    font-weight: bold;
+}
+.top-bar-item select,
+.top-bar-item input[type="range"],
+.top-bar-item input[type="text"] {
+    padding: 5px 8px;
     border: 1px solid #ccc;
     border-radius: var(--border-radius);
-    font-family: var(--font-primary);
+    font-size: 0.9rem;
 }
-
-.theme-toggle button,
-.font-size-adjust button,
-.line-guide-toggle button,
-.search-bar button {
+.top-bar-item button {
+    padding: 5px 10px;
     background-color: var(--button-bg);
     color: var(--button-text);
     border: none;
-    padding: 8px 12px;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: background-color var(--transition-speed), transform var(--transition-speed);
+    font-size: 0.9rem;
 }
-
-.theme-toggle button:hover,
-.font-size-adjust button:hover,
-.line-guide-toggle button:hover,
-.search-bar button:hover {
-    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+.top-bar-item button:hover {
+    background-color: var(--button-hover-bg);
     transform: translateY(-2px);
 }
 
-/* Search Bar */
-.search-bar {
-    display: flex;
-    gap: 10px;
-}
-
-.search-bar input {
+/* Search Bar Specific (if inside top-bar, use same rules) */
+.top-bar .search-bar {
     flex: 1;
+    display: flex;
+    gap: 5px;
 }
-
-.search-bar button {
-    flex-shrink: 0;
+.top-bar .search-bar input {
+    flex: 1;
 }
 
 /* Text Display */
@@ -193,17 +178,14 @@ h1 {
     max-height: 60vh;
     overflow-y: auto;
 }
-
 .text-wrapper p {
     margin-bottom: 1.5em;
     line-height: 1.8;
 }
-
 .text-wrapper span {
     cursor: pointer;
     transition: background-color var(--transition-speed), color var(--transition-speed);
 }
-
 .text-wrapper span:hover,
 .text-wrapper span:focus {
     background-color: var(--highlight-color);
@@ -211,7 +193,6 @@ h1 {
     outline: none;
     border-radius: 4px;
 }
-
 .highlight {
     background-color: var(--highlight-color);
     color: var(--button-text);
@@ -220,15 +201,21 @@ h1 {
 
 /* Line Guide */
 .line-guide {
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background-color: rgba(242, 166, 90, 0.7); /* Soft Orange */
-    pointer-events: none;
-    z-index: 1;
-    top: 0; /* Initial Position */
-    transition: top var(--transition-speed);
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background-color: rgba(242, 166, 90, 0.7); /* Visible soft orange line */
+  pointer-events: none;
+  z-index: 10;
+  top: 0;
+  transition: top 0.3s;
 }
+
+/* When the line guide is active, display it */
+.line-guide.active {
+    display: block;
+}
+
 
 /* Read Full Text Controls */
 .read-full-text-container {
@@ -237,7 +224,6 @@ h1 {
     justify-content: center;
     margin-top: 20px;
 }
-
 .read-full-text-container button {
     background-color: var(--button-bg);
     color: var(--button-text);
@@ -248,9 +234,8 @@ h1 {
     font-size: 1rem;
     transition: background-color var(--transition-speed), transform var(--transition-speed);
 }
-
 .read-full-text-container button:hover {
-    background-color: var(--button-hover-bg); /* Use Precomputed Darker Shade */
+    background-color: var(--button-hover-bg);
     transform: translateY(-2px);
 }
 
@@ -266,16 +251,13 @@ h1 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    display: none; /* Hidden by default */
+    display: none;
     z-index: 1000;
 }
-
 @keyframes spin {
     0% { transform: translate(-50%, -50%) rotate(0deg); }
     100% { transform: translate(-50%, -50%) rotate(360deg); }
 }
-
-/* Loading State */
 body.loading #spinner {
     display: block;
 }
@@ -293,202 +275,140 @@ body.dark-mode {
     --accent-color: #A67B5B;
     --text-color: #EEEEEE;
     --button-bg: #6CA0DC;
-    --button-hover-bg: #6190C6; /* Darker Shade for Dark Mode */
+    --button-hover-bg: #6190C6;
     --highlight-color: #F2A65A;
 }
-
 body.dark-mode .flash-message {
     background-color: #4C4C4C;
     border-left: 4px solid var(--highlight-color);
 }
-
 body.dark-mode .line-guide {
     background-color: rgba(242, 166, 90, 0.7);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
     .upload-form form {
         flex-direction: column;
     }
-
     .read-full-text-container {
         flex-direction: column;
     }
-
-    .search-bar {
-        flex-direction: column;
-    }
 }
 
-/* Default font size for text-wrapper */
+/* Text Wrapper Defaults */
 #text-container .text-wrapper {
-    font-size: 16px; /* Default font size */
-    transition: font-size 0.3s ease; /* Smooth size change */
-    white-space: pre-wrap; /* Preserve spaces, indentation, and line breaks */
-    word-wrap: break-word; /* Ensure long words wrap within the container */
-    font-family: var(--font-primary); /* Apply your custom font */
+    font-size: 16px;
+    transition: font-size 0.3s ease;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: var(--font-primary);
 }
 
-
+/* Additional Styles for Hyphenation, Visualizable Words, etc. */
 .text-wrapper span.search-highlight {
     background-color: #81c784;
     border-radius: 3px;
     padding: 2px 4px;
     color: #fff;
 }
-
-/* Speed Control with Slider Styling */
 .speed-control {
     margin: 10px 0;
     display: flex;
     align-items: center;
 }
-
 .speed-control label {
     margin-right: 10px;
     font-weight: bold;
 }
-
 .speed-control input[type="range"] {
     margin-right: 10px;
 }
-
 #speed-value {
     font-weight: bold;
 }
-
-
-/* Phonetic Transcription Styling */
 .transcription {
     font-style: italic;
     color: #888;
     margin-left: 5px;
     font-size: 0.9em;
 }
-
-/* Obsługiwane języki */
-.language-selector {
-    margin-bottom: 20px;
-}
-
 .language-selector label {
     margin-right: 10px;
     font-weight: bold;
 }
-
 .language-selector select {
     padding: 5px;
     font-size: 1em;
 }
-
-/* Speed Control with Slider Styling */
-.speed-control {
-    margin: 10px 0;
-    display: flex;
-    align-items: center;
-}
-
-.speed-control label {
-    margin-right: 10px;
-    font-weight: bold;
-}
-
-.speed-control input[type="range"] {
-    margin-right: 10px;
-}
-
-#speed-value {
-    font-weight: bold;
-}
-
-/* styles.css */
-
 .syllabify-option {
     margin: 10px 0;
     display: flex;
     align-items: center;
 }
-
 .syllabify-option label {
     font-weight: bold;
     cursor: pointer;
 }
-
 .syllabify-option input[type="checkbox"] {
     margin-right: 10px;
     transform: scale(1.2);
     cursor: pointer;
 }
-
-/* Stylizacja hyfacji */
 .text-wrapper span {
     cursor: pointer;
 }
-
 .text-wrapper span.highlight {
     background-color: yellow;
 }
-
 .text-wrapper span.search-highlight {
     background-color: orange;
 }
-
 .text-wrapper span.numerical-word {
     color: #555;
 }
-
-/* Stylizacja wizualizowalnych słów */
 .text-wrapper span.visualizable-word {
     color: #007BFF;
     cursor: pointer;
 }
-
 .text-wrapper span.visualizable-word:hover {
     text-decoration: underline;
 }
-
-/* Opcjonalne: Stylizacja sylab */
 .text-wrapper span.syllable {
-    color: #007BFF; /* Niebieski kolor dla sylab */
+    color: #007BFF;
 }
-
-
-/* Image Display */
 #image-container img {
     max-width: 200px;
     margin-top: 20px;
     border: 2px solid #ccc;
     border-radius: 5px;
 }
-
-/* Modal Styles */
 .modal {
-    display: none; /* Ukryty domyślnie */
-    position: fixed; /* Stała pozycja względem okna przeglądarki */
-    z-index: 1000; /* Warstwa na najwyższym poziomie */
+    display: none;
+    position: fixed;
+    z-index: 1000;
     left: 0;
     top: 0;
-    width: 100%; /* Pełna szerokość */
-    height: 100%; /* Pełna wysokość */
-    overflow: auto; /* Scroll jeśli zawartość jest większa */
-    background-color: rgba(0, 0, 0, 0.8); /* Tło z przezroczystością */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8);
 }
-
-/* Modal Content */
 .modal-content {
     position: relative;
-    margin: 5% auto; /* Wyśrodkowanie modalnego okna */
+    margin: 5% auto;
     padding: 20px;
     width: 80%;
-    max-width: 500px; /* Maksymalna szerokość */
+    max-width: 500px;
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
     text-align: center;
 }
-
-/* Close Button */
 .close-button {
     position: absolute;
     top: 10px;
@@ -498,17 +418,61 @@ body.dark-mode .line-guide {
     font-weight: bold;
     cursor: pointer;
 }
-
 .close-button:hover,
 .close-button:focus {
     color: #000;
     text-decoration: none;
 }
-
-/* Modal Image */
 #modal-image {
     width: 100%;
     height: auto;
     border-radius: 4px;
 }
+#text-tracker-container {
+    width: 100%;
+    background-color: #ddd;
+    height: 8px;
+    margin-top: 10px;
+    position: relative;
+}
+#text-tracker {
+    background-color: #4caf50;
+    height: 100%;
+    width: 0%;
+    transition: width 0.2s linear;
+}
+.highlight {
+    background-color: yellow;
+    transition: background-color 0.3s;
+}
+/* Floating Button Container */
+#floating-controls {
+    position: fixed;
+    bottom: 20px;   /* default distance from bottom */
+    right: 20px;    /* default distance from right */
+    z-index: 10000; /* ensure it appears above other elements */
+    background: var(--secondary-bg);
+    padding: 10px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    cursor: move;  /* indicates that it's draggable */
+    display: flex;
+    gap: 10px;
+}
 
+/* Button Styles (if not already defined) */
+.read-full-text-container button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+}
+
+.read-full-text-container button:hover {
+    background-color: var(--button-hover-bg);
+    transform: translateY(-2px);
+}

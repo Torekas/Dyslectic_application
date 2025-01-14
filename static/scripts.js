@@ -1,6 +1,12 @@
 // Global Variables
 let fullTextAudio = null;
 let isFullTextPaused = false;
+let fullTextInterval = null;
+let fullTextStartTime = 0;
+let fullTextDuration = 0; // effective duration in seconds (audio.duration / speed)
+let pausedElapsedTime = 0; // stores elapsed time at the moment of pausing
+let isTextVisible = false; // New global flag
+
 
 // Theme Toggle Initialization
 document.addEventListener('DOMContentLoaded', () => {
@@ -46,11 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Wywołanie updateTextDisplay podczas ładowania strony
+    isTextVisible = true;
     updateTextDisplay();
 });
 
 // Function to update displayed text based on selected language and syllabification
 async function updateTextDisplay() {
+    if (!isTextVisible) return;
     const language = document.getElementById('display-language').value;
     const textContainer = document.getElementById('text-container');
     const textWrapper = textContainer.querySelector('.text-wrapper');
@@ -115,6 +123,7 @@ async function updateTextDisplay() {
         textWrapper.appendChild(p);
     });
 }
+
 
 // Function to read a single word with punctuation handling
 function readWord(word, spanElement) {
@@ -255,25 +264,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Function to read the full text
 function readFullText() {
+    // Clear the active element's focus.
+    if (document.activeElement) {
+        document.activeElement.blur();
+    }
+
     const language = document.getElementById('display-language').value;
-    console.log('Selected language:', language);
     const speed = parseFloat(document.getElementById('reading-speed').value);
-    console.log('Selected speed:', speed);
     const syllabify = localStorage.getItem('syllabify') === 'true';
-    console.log('Syllabify:', syllabify);
     toggleSpinner(true);
 
     if (fullTextAudio) {
-        console.log('Stopping existing audio.');
         fullTextAudio.pause();
         fullTextAudio.currentTime = 0;
         fullTextAudio = null;
     }
 
     const originalText = window.currentTexts[language] || "";
-    console.log('Original text:', originalText);
     const sanitizedText = sanitizeText(originalText);
-    console.log('Sanitized text:', sanitizedText);
 
     fetch('/read_text', {
         method: 'POST',
@@ -284,30 +292,39 @@ function readFullText() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Received data from /read_text:', data);
         toggleSpinner(false);
-        if(data.error){
+        if (data.error) {
             alert(`Error: ${data.error}`);
             return;
         }
         fullTextAudio = new Audio(data.audio);
-        fullTextAudio.playbackRate = speed; // Set playback rate
-        fullTextAudio.play();
-        isFullTextPaused = false;
-        updatePausePlayButton(); // Set button to 'Pause'
+        fullTextAudio.playbackRate = speed;
+
+        fullTextAudio.onloadedmetadata = () => {
+            fullTextDuration = fullTextAudio.duration / speed;
+            fullTextStartTime = Date.now();
+            startTextTracker();
+        };
 
         fullTextAudio.onended = () => {
-            console.log('Full text audio ended.');
             fullTextAudio = null;
             isFullTextPaused = false;
-            updatePausePlayButton(); // Reset button to 'Pause'
+            updatePausePlayButton();
+            stopTextTracker();
+            resetTextTracking();
             toggleSpinner(false);
         };
 
         fullTextAudio.onerror = () => {
-            alert('Wystąpił problem podczas odtwarzania audio.');
+            alert('An error occurred during full text audio playback.');
             toggleSpinner(false);
+            stopTextTracker();
+            resetTextTracking();
         };
+
+        fullTextAudio.play();
+        isFullTextPaused = false;
+        updatePausePlayButton();
     })
     .catch(error => {
         toggleSpinner(false);
@@ -315,27 +332,98 @@ function readFullText() {
     });
 }
 
+
+
+
+// Starts the text tracking for full text reading
+function startTextTracker() {
+    if (fullTextInterval) clearInterval(fullTextInterval);
+    updateTrackerBar(0);
+
+    fullTextInterval = setInterval(() => {
+        // Calculate elapsed time in seconds using effective duration.
+        const elapsedSeconds = (Date.now() - fullTextStartTime) / 1000;
+        let progressRatio = elapsedSeconds / fullTextDuration;
+        if (progressRatio > 1) progressRatio = 1;
+
+        // Update the visual progress bar
+        updateTrackerBar(progressRatio);
+
+        // Update text highlighting – get all word spans
+        const words = document.querySelectorAll('.text-wrapper span');
+        if (!words.length) return;
+
+        const wordIndex = Math.floor(progressRatio * words.length);
+
+        words.forEach((wordSpan, index) => {
+            if (index === wordIndex) {
+                wordSpan.classList.add('highlight');
+                // Optionally scroll the word into view.
+                wordSpan.scrollIntoView({ behavior: "smooth", block: "center" });
+            } else {
+                wordSpan.classList.remove('highlight');
+            }
+        });
+
+        if (progressRatio >= 1) {
+            stopTextTracker();
+        }
+    }, 100);
+}
+
+
+// Stops the text tracker
+function stopTextTracker() {
+    if (fullTextInterval) {
+        clearInterval(fullTextInterval);
+        fullTextInterval = null;
+    }
+}
+
+// Resets text highlighting (removes all highlights)
+function resetTextTracking() {
+    const words = document.querySelectorAll('.text-wrapper span');
+    words.forEach(wordSpan => {
+        wordSpan.classList.remove('highlight');
+    });
+}
+
+// Updates the tracker bar based on progress (ratio value: 0 to 1)
+function updateTrackerBar(progressRatio) {
+    const tracker = document.getElementById('text-tracker');
+    if (tracker) {
+        tracker.style.width = `${progressRatio * 100}%`;
+    }
+}
+
 // Function to pause or play the full text audio
 function pausePlayFullText() {
-    if (!fullTextAudio) {
-        // No audio is currently playing
-        return;
-    }
+    if (!fullTextAudio) return;
 
     if (isFullTextPaused) {
-        // Resume playback
+        // Resuming playback:
+        // Set the start time so that the elapsed time remains the same.
+        fullTextStartTime = Date.now() - pausedElapsedTime;
         const speed = parseFloat(document.getElementById('reading-speed').value);
-        fullTextAudio.playbackRate = speed; // Reapply the speed
+        fullTextAudio.playbackRate = speed;
         fullTextAudio.play();
+        // Restart the tracker if it was stopped
+        if (!fullTextInterval) startTextTracker();
         isFullTextPaused = false;
     } else {
-        // Pause playback
+        // Pausing playback:
         fullTextAudio.pause();
+        // Record the elapsed time until pause
+        pausedElapsedTime = Date.now() - fullTextStartTime;
+        // Stop updating the tracker so that it retains its current state.
+        stopTextTracker();
         isFullTextPaused = true;
     }
 
     updatePausePlayButton();
 }
+
+
 
 // Function to stop the full text reading
 function stopFullText() {
@@ -343,11 +431,17 @@ function stopFullText() {
         fullTextAudio.pause();
         fullTextAudio.currentTime = 0;
         fullTextAudio = null;
-        isFullTextPaused = false;
-        updatePausePlayButton(); // Reset button to 'Pause'
-        toggleSpinner(false);
     }
+    isFullTextPaused = false;
+    updatePausePlayButton(); // Reset button to 'Pause'
+    toggleSpinner(false);
+    stopTextTracker();       // Stop tracker interval
+    resetTextTracking();     // Remove any current highlights
+    updateTrackerBar(0);     // Reset the progress bar to 0%
+    pausedElapsedTime = 0;   // Reset the paused elapsed time
 }
+
+
 
 // Function to search within text
 function searchText() {
@@ -396,97 +490,104 @@ function sanitizeText(text) {
 }
 
 /* Line Guide Toggle Functionality with Persistence */
+/* Line Guide Toggle Functionality */
 document.addEventListener('DOMContentLoaded', () => {
-    const toggleLineGuideBtn = document.getElementById('toggle-line-guide');
-    const textContainer = document.getElementById('text-container');
-    let lineGuideActive = localStorage.getItem('lineGuideActive') === 'true';
-    let lineGuide = null;
+  const toggleLineGuideBtn = document.getElementById('toggle-line-guide');
+  const textContainer = document.getElementById('text-container');
+  let lineGuideActive = false;
+  let lineGuide = null;
+
+  // Set the initial button text
+  toggleLineGuideBtn.textContent = '📏 Show Line Guide';
+
+  toggleLineGuideBtn.addEventListener('click', () => {
+    lineGuideActive = !lineGuideActive;
 
     if (lineGuideActive) {
-        toggleLineGuideBtn.textContent = '📏 Hide Line Guide';
-        // Create and append the line guide element
+      toggleLineGuideBtn.textContent = '📏 Hide Line Guide';
+
+      // Create the line guide element if it doesn't exist
+      if (!lineGuide) {
         lineGuide = document.createElement('div');
         lineGuide.classList.add('line-guide');
+        // Initially hide it – it will be shown on first mousemove
+        lineGuide.style.display = 'none';
         textContainer.appendChild(lineGuide);
-        // Add mousemove and touchmove event listeners with throttling
-        textContainer.addEventListener('mousemove', throttle(handleCursorMove, 20));
-        textContainer.addEventListener('touchmove', throttle(handleCursorMove, 20));
+      }
+
+      // Add mousemove and touchmove event listeners
+      textContainer.addEventListener('mousemove', throttledHandleCursorMove);
+      textContainer.addEventListener('touchmove', throttledHandleCursorMove);
     } else {
-        toggleLineGuideBtn.textContent = '📏 Show Line Guide';
+      toggleLineGuideBtn.textContent = '📏 Show Line Guide';
+
+      // Remove the line guide element if it exists
+      if (lineGuide) {
+        textContainer.removeChild(lineGuide);
+        lineGuide = null;
+      }
+
+      // Remove event listeners
+      textContainer.removeEventListener('mousemove', throttledHandleCursorMove);
+      textContainer.removeEventListener('touchmove', throttledHandleCursorMove);
     }
 
-    toggleLineGuideBtn.addEventListener('click', () => {
-        lineGuideActive = !lineGuideActive;
-        localStorage.setItem('lineGuideActive', lineGuideActive);
-        if (lineGuideActive) {
-            toggleLineGuideBtn.textContent = '📏 Hide Line Guide';
-            // Create and append the line guide element
-            if (!lineGuide) {
-                lineGuide = document.createElement('div');
-                lineGuide.classList.add('line-guide');
-                textContainer.appendChild(lineGuide);
-            }
+    // Update accessibility attributes
+    const status = lineGuideActive ? 'activated' : 'deactivated';
+    toggleLineGuideBtn.setAttribute('aria-pressed', lineGuideActive);
+    toggleLineGuideBtn.setAttribute('aria-label', `Toggle Line Guide, currently ${status}`);
+  });
 
-            // Add mousemove and touchmove event listeners
-            textContainer.addEventListener('mousemove', throttle(handleCursorMove, 20));
-            textContainer.addEventListener('touchmove', throttle(handleCursorMove, 20));
-        } else {
-            toggleLineGuideBtn.textContent = '📏 Show Line Guide';
-            // Remove the line guide element
-            if (lineGuide) {
-                textContainer.removeChild(lineGuide);
-                lineGuide = null;
-            }
-            // Remove mousemove and touchmove event listeners
-            textContainer.removeEventListener('mousemove', handleCursorMove);
-            textContainer.removeEventListener('touchmove', handleCursorMove);
-        }
+  function handleCursorMove(event) {
+    if (!lineGuide) return;
+    const rect = textContainer.getBoundingClientRect();
+    let y;
 
-        // Update accessibility attributes
-        const status = lineGuideActive ? 'activated' : 'deactivated';
-        toggleLineGuideBtn.setAttribute('aria-pressed', lineGuideActive);
-        toggleLineGuideBtn.setAttribute('aria-label', `Toggle Line Guide, currently ${status}`);
-    });
-
-    function handleCursorMove(event) {
-        if (!lineGuide) return;
-
-        const rect = textContainer.getBoundingClientRect();
-        let y;
-
-        if (event.type.startsWith('touch')) {
-            if (event.touches.length === 0) return;
-            y = event.touches[0].clientY - rect.top;
-        } else {
-            y = event.clientY - rect.top;
-        }
-
-        // Position the line-guide vertically within the text container
-        y += textContainer.scrollTop;
-        lineGuide.style.top = `${y}px`;
+    if (event.type.startsWith('touch')) {
+      if (event.touches.length === 0) return;
+      y = event.touches[0].clientY - rect.top;
+    } else {
+      y = event.clientY - rect.top;
     }
 
-    // Throttle function to improve performance
-    function throttle(func, limit) {
-        let lastFunc;
-        let lastRan;
-        return function(...args) {
-            const context = this;
-            if (!lastRan) {
-                func.apply(context, args);
-                lastRan = Date.now();
-            } else {
-                clearTimeout(lastFunc);
-                lastFunc = setTimeout(function() {
-                    if ((Date.now() - lastRan) >= limit) {
-                        func.apply(context, args);
-                        lastRan = Date.now();
-                    }
-                }, limit - (Date.now() - lastRan));
-            }
-        }
+    // Add the scroll offset
+    y += textContainer.scrollTop;
+
+    // On first movement, show the line guide instead of being hidden
+    if (lineGuide.style.display === 'none') {
+      lineGuide.style.display = 'block';
     }
+
+    lineGuide.style.top = `${y}px`;
+  }
+
+  // Throttle to limit how often the line updates, using a 20ms limit
+  const throttledHandleCursorMove = throttle(handleCursorMove, 20);
+
+  // Throttle function to reduce frequency of calls
+  function throttle(func, limit) {
+    let lastFunc;
+    let lastRan;
+    return function(...args) {
+      const context = this;
+      if (!lastRan) {
+        func.apply(context, args);
+        lastRan = Date.now();
+      } else {
+        clearTimeout(lastFunc);
+        lastFunc = setTimeout(function() {
+          if ((Date.now() - lastRan) >= limit) {
+            func.apply(context, args);
+            lastRan = Date.now();
+          }
+        }, limit - (Date.now() - lastRan));
+      }
+    };
+  }
 });
+
+
+
 
 // Function to toggle the spinner visibility
 function toggleSpinner(show) {

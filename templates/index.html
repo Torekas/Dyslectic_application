@@ -32,7 +32,7 @@
             <input type="file" id="file" name="file" accept=".txt, .pdf" required aria-required="true">
 
             <!-- Language Selector for Upload -->
-            <label for="upload-language">🗣️ Wybierz Język Uploadu:</label>
+            <label for="upload-language">🗣️ Choose the language of upload:</label>
             <select id="upload-language" name="upload_language" aria-label="Select Language for Upload">
                 {% for code, name in languages.items() %}
                     <option value="{{ code }}">{{ name }}</option>
@@ -42,52 +42,52 @@
             <button type="submit">Upload</button>
         </form>
     </div>
-
-    <!-- Language Selection for Display -->
-    <div class="language-selector">
-        <label for="display-language">🗣️ Wybierz Język Wyświetlania: </label>
+    <!-- Compact Top Bar for Controls -->
+    <div class="top-bar">
+      <div class="top-bar-item language-selector">
+        <label for="display-language">🗣️ Language:</label>
         <select id="display-language" aria-label="Select Display Language">
-            {% for code, name in languages.items() %}
-                <option value="{{ code }}">{{ name }}</option>
-            {% endfor %}
+          {% for code, name in languages.items() %}
+            <option value="{{ code }}">{{ name }}</option>
+          {% endfor %}
         </select>
-    </div>
+      </div>
 
-    <!-- Theme Toggle -->
-    <div class="theme-toggle">
+      <div class="top-bar-item theme-toggle">
         <button id="theme-toggle-btn" aria-label="Toggle Theme">🌙 Dark Mode</button>
-    </div>
+      </div>
 
-    <!-- Font Size Adjustment -->
-    <div class="font-size-adjust">
-        <button onclick="changeFontSize('increase')" aria-label="Increase Font Size">🔍 A+</button>
-        <button onclick="changeFontSize('decrease')" aria-label="Decrease Font Size">🔎 A-</button>
-    </div>
+      <div class="top-bar-item font-size-adjust">
+        <button onclick="changeFontSize('increase')" aria-label="Increase Font Size">A+</button>
+        <button onclick="changeFontSize('decrease')" aria-label="Decrease Font Size">A-</button>
+      </div>
 
-    <!-- Speed Control with Slider -->
-    <div class="speed-control">
-        <label for="reading-speed">📈 Reading Speed:</label>
+      <div class="top-bar-item speed-control">
+        <label for="reading-speed">📈 Speed:</label>
         <input type="range" id="reading-speed" min="0.5" max="2" step="0.1" value="1" aria-label="Select Reading Speed">
         <span id="speed-value">1x</span>
-    </div>
+      </div>
 
-    <!-- Syllabification Option -->
-    <div class="syllabify-option">
-        <label for="syllabify-checkbox">
-            <input type="checkbox" id="syllabify-checkbox" aria-label="Toggle Syllabification">
-            📚 Podział na sylaby
-        </label>
-    </div>
+      <div class="top-bar-item syllabify-option">
+        <input type="checkbox" id="syllabify-checkbox" aria-label="Toggle Syllabification">
+        <label for="syllabify-checkbox">📚 Syllables</label>
+      </div>
 
-    <!-- Line Guide Toggle Button -->
-    <div class="line-guide-toggle">
-        <button id="toggle-line-guide" aria-label="Toggle Line Guide">📏 Show Line Guide</button>
-    </div>
+      <div class="top-bar-item line-guide-toggle">
+        <button id="toggle-line-guide" aria-label="Toggle Line Guide">📏 Line Guide</button>
+      </div>
 
-    <!-- Search Bar -->
-    <div class="search-bar">
-        <input type="text" id="search-input" placeholder="🔍 Szukaj w tekście...">
+      <div class="top-bar-item search-bar">
+        <input type="text" id="search-input" placeholder="🔍 Szukaj..." aria-label="Search in text">
         <button onclick="searchText()">Search</button>
+      </div>
+    </div>
+
+    <!-- Read Full Text, Pause/Play, and Stop Buttons -->
+    <div class="read-full-text-container">
+        <button class="read-full-text" onclick="readFullText()" aria-label="Read Full Text">🔊 Read Full Text</button>
+        <button class="pause-play-full-text" onclick="pausePlayFullText()" aria-label="Pause Reading Full Text">⏸️ Pause</button>
+        <button class="stop-full-text" onclick="stopFullText()" aria-label="Stop Reading Full Text">⏹️ Stop</button>
     </div>
 
     <!-- Text Display -->
@@ -98,13 +98,9 @@
         <div class="line-guide"></div>
     </div>
 
-    <!-- Read Full Text, Pause/Play, and Stop Buttons -->
-    <div class="read-full-text-container">
-        <button class="read-full-text" onclick="readFullText()" aria-label="Read Full Text">🔊 Read Full Text</button>
-        <button class="pause-play-full-text" onclick="pausePlayFullText()" aria-label="Pause Reading Full Text">⏸️ Pause</button>
-        <button class="stop-full-text" onclick="stopFullText()" aria-label="Stop Reading Full Text">⏹️ Stop</button>
+    <div id="text-tracker-container">
+        <div id="text-tracker"></div>
     </div>
-
 
     <!-- Spinner for Loading -->
     <div id="spinner" class="spinner" aria-hidden="true"></div>
