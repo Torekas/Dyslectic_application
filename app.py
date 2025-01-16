@@ -19,8 +19,8 @@ app.secret_key = 'your_secure_secret_key'  # Replace with a secure key in produc
 
 # Obsługiwane języki z ich pełnymi nazwami
 SUPPORTED_LANGUAGES = {
-    'en': "English",
     'pl': "Polski",
+    'en': "English",
     'es': "Español",
     'de': "Deutsch",
     'fr': "Français",
@@ -35,8 +35,8 @@ SUPPORTED_LANGUAGES = {
 
 # Inicjalizacja aktualnych tekstów z domyślnymi przykładami
 CURRENT_TEXT = {
-    'en': "This is a simple Flask application to read a word or the entire text.",
     'pl': "Każdego ranka, Ania wstaje z łóżka. Najpierw umyje twarz i je śniadanie. Potem zakłada plecak i idzie do szkoły. W szkole Ania uczy się matematyki, języka polskiego oraz przyrody. Po lekcjach spotyka się ze przyjaciółmi na placu zabaw. Wieczorem Ania odrabia zadania domowe, czyta książkę i kładzie się do łóżka, aby odpocząć przed nowym dniem.",
+    'en': "This is a simple Flask application to read a word or the entire text.",
     'es': "Esta es una aplicación Flask sencilla para leer una palabra o todo el texto.",
     'de': "Dies ist eine einfache Flask-Anwendung, um ein Wort oder den gesamten Text vorzulesen.",
     'fr': "Ceci est une application Flask simple pour lire un mot ou tout le texte.",
@@ -47,6 +47,12 @@ CURRENT_TEXT = {
     'zh-cn': "这是一个简单的Flask应用程序，用于朗读单词或整个文本。",
     'ar': "هذا تطبيق Flask بسيط لقراءة كلمة أو النص بالكامل.",
     # Dodaj więcej języków według potrzeb
+}
+
+SUPPORTED_FONTS = {
+    'arial.ttf',
+    'calibri.ttf',
+    'OpenDyslexic-Regularf.ttf'
 }
 
 # Inicjalizacja słowników sylabowych
@@ -98,7 +104,21 @@ def syllabify_text(text, language):
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html', languages=SUPPORTED_LANGUAGES, current_text=CURRENT_TEXT)
+    return render_template('index.html', languages=SUPPORTED_LANGUAGES, current_text=CURRENT_TEXT, fonts=SUPPORTED_FONTS)
+
+
+@app.route('/apply_font', methods=['POST'])
+def apply_font():
+    data = request.get_json()
+    font = data.get('font')
+    text = data.get('text', '')
+
+    if font not in SUPPORTED_FONTS:
+        return jsonify({"error": "Unsupported font"}), 400
+
+    # Logic to render text with the chosen font
+    styled_text = f"<span style='font-family:{font};'>{text}</span>"
+    return jsonify({"styled_text": styled_text})
 
 
 @app.route('/upload', methods=['POST'])

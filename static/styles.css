@@ -2,8 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap');
 
 @font-face {
-    font-family: 'CustomFont';
-    src: url('/static/fonts/OpenDyslexic-Regular.ttf') format('truetype');
+    font-family: 'Arial';
+    src: url('/static/fonts/arial.ttf');
+}
+
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('/static/fonts/OpenDyslexic-Regular.ttf');
+}
+
+@font-face {
+    font-family: 'Calibri';
+    src: url('/static/fonts/calibri.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -18,8 +28,8 @@
     --button-hover-bg: #6190C6;
     --button-text: #FFFFFF;
     --highlight-color: #F2A65A;
-    --font-primary: 'CustomFont';
-    --font-accent: 'CustomFont';
+    --font-primary: 'Calibri';
+    --font-accent: 'Calibri';
     --font-size-base: 16px;
     --border-radius: 8px;
     --transition-speed: 0.3s;
@@ -44,11 +54,11 @@ body {
 
 /* Apply Custom Font to Buttons and Selects */
 button, select, input[type="button"], input[type="submit"] {
-    font-family: 'CustomFont', Arial, sans-serif;
+    font-family: 'Calibri', Arial, sans-serif;
 }
 
 input, textarea {
-    font-family: 'CustomFont', Arial, sans-serif;
+    font-family: 'Calibri', Arial, sans-serif;
 }
 
 h1 {
@@ -89,6 +99,7 @@ h1 {
 }
 .upload-form label {
     font-weight: 700;
+    font-size: 1rem;
 }
 .upload-form input[type="file"],
 .upload-form select {
@@ -98,6 +109,13 @@ h1 {
     font-family: var(--font-primary);
     font-size: 1rem;
 }
+.upload-form select#font-selector {
+    font-family: 'Arial', sans-serif; /* Default font */
+    margin-bottom: 1rem; /* Space below the dropdown */
+    margin-top: 1rem;    /* Space above the dropdown */
+    display: block;      /* Ensures it stays on its own line */
+}
+
 .upload-form button {
     align-self: flex-start;
     background-color: var(--button-bg);
@@ -113,6 +131,7 @@ h1 {
     background-color: var(--button-hover-bg);
     transform: translateY(-2px);
 }
+
 
 /* Compact Top Bar */
 .top-bar {
@@ -286,6 +305,7 @@ body.dark-mode .line-guide {
     background-color: rgba(242, 166, 90, 0.7);
 }
 
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .top-bar {
@@ -302,11 +322,12 @@ body.dark-mode .line-guide {
 
 /* Text Wrapper Defaults */
 #text-container .text-wrapper {
-    font-size: 16px;
-    transition: font-size 0.3s ease;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: var(--font-primary);
+    white-space: normal; /* Allow normal word wrapping */
+    word-wrap: break-word; /* Allow words to break when necessary */
+    word-break: break-word; /* Ensure words do not break improperly */
+    letter-spacing: normal;
+    line-height: 1.5;
+    text-align: justify; /* Align text to avoid awkward gaps in certain fonts */
 }
 
 /* Additional Styles for Hyphenation, Visualizable Words, etc. */
@@ -337,6 +358,8 @@ body.dark-mode .line-guide {
     margin-left: 5px;
     font-size: 0.9em;
 }
+
+
 .language-selector label {
     margin-right: 10px;
     font-weight: bold;

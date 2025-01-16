@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📖 Flask Text Reader</title>
+    <title>📖 Flask Text Reader 📖</title>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <!-- Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <h1>📖 Flask Text Reader</h1>
+    <h1>📖 Flask Text Reader 📖</h1>
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -37,6 +38,13 @@
                 {% for code, name in languages.items() %}
                     <option value="{{ code }}">{{ name }}</option>
                 {% endfor %}
+            </select>
+
+            <label for="font-selector">🖋️ Choose the font of upload:</label>
+            <select id="font-selector" name="font_selector" aria-label="Select Font for Upload">
+                <option value="Arial">Arial</option>
+                <option value="Calibri">Calibri</option>
+                <option value="OpenDyslexic">OpenDyslexic</option>
             </select>
 
             <button type="submit">Upload</button>
@@ -78,7 +86,7 @@
       </div>
 
       <div class="top-bar-item search-bar">
-        <input type="text" id="search-input" placeholder="🔍 Szukaj..." aria-label="Search in text">
+        <input type="text" id="search-input" placeholder="🔍 Search..." aria-label="Search in text">
         <button onclick="searchText()">Search</button>
       </div>
     </div>
@@ -88,6 +96,7 @@
         <button class="read-full-text" onclick="readFullText()" aria-label="Read Full Text">🔊 Read Full Text</button>
         <button class="pause-play-full-text" onclick="pausePlayFullText()" aria-label="Pause Reading Full Text">⏸️ Pause</button>
         <button class="stop-full-text" onclick="stopFullText()" aria-label="Stop Reading Full Text">⏹️ Stop</button>
+        <button class="download-btn", onclick="downloadConvertedText()", aria-label="Download Converted Text">⬇️ Download</button>
     </div>
 
     <!-- Text Display -->
