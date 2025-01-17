@@ -124,6 +124,13 @@
 
     <!-- JavaScript Files -->
     <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <script src="{{ url_for('static', filename='arial.js') }}"></script>
+    <script src="{{ url_for('static', filename='calibri.js') }}"></script>
+    <script src="{{ url_for('static', filename='calibrib.js') }}"></script>
+    <script src="{{ url_for('static', filename='calibrii.js') }}"></script>
+    <script src="{{ url_for('static', filename='calibril.js') }}"></script>
+    <script src="{{ url_for('static', filename='calibriz.js') }}"></script>
+    <script src="{{ url_for('static', filename='OpenDyslexic-Regular.js') }}"></script>
     <script>
         // Przekazanie zmiennych Flask do JavaScript
         window.currentTexts = {{ current_text | tojson }};

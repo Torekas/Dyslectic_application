@@ -7,6 +7,7 @@ let fullTextDuration = 0; // effective duration in seconds (audio.duration / spe
 let pausedElapsedTime = 0; // stores elapsed time at the moment of pausing
 let isTextVisible = false; // New global flag
 
+
 document.addEventListener('DOMContentLoaded', () => {
     const savedFont = localStorage.getItem('selectedFont') || 'Arial'; // Default to Arial if no font is saved
     applyFont(savedFont);
@@ -28,6 +29,7 @@ function applyFont(font) {
     // Persist the font choice to localStorage
     localStorage.setItem('selectedFont', font);
 }
+
 
 
 // Theme Toggle Initialization
@@ -78,39 +80,37 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTextDisplay();
 });
 function downloadConvertedText() {
-    // Get the converted text from the #text-container
     const convertedText = document.getElementById('text-container').innerText;
-
-    // Retrieve the saved font from localStorage (or default to Arial if none is set)
-    const selectedFont = localStorage.getItem('selectedFont') || 'Arial';
-
-    // Create a new jsPDF instance
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
-    // Set the selected font (assuming the font is available in jsPDF)
-    doc.setFont(selectedFont);  // Use the font selected by the user
+    // 1) Get user-chosen font from localStorage
+    const selectedFont = localStorage.getItem('selectedFont') || 'Arial';
 
-    // Set the font size for the text
-    const fontSize = 12; // Adjust this value as needed
-    doc.setFontSize(fontSize);
+    // 2) Set that font in jsPDF (assuming you've embedded them)
+    switch (selectedFont) {
+      case 'OpenDyslexic':
+        doc.setFont('OpenDyslexic', 'normal');
+        break;
+      case 'Arial':
+        doc.setFont('Arial', 'normal');
+        break;
+      default:
+        doc.setFont('helvetica', 'normal'); // fallback
+    }
 
-    // Get the page width to handle text wrapping
-    const pageWidth = doc.internal.pageSize.getWidth() - 20; // 10px margin on each side
+    doc.setFontSize(12);
 
-    // Wrap the text within the page width
-    let yPosition = 10; // Starting position on the Y-axis
-    const margin = 10; // Left margin of the PDF
+    // 3) Add text, wrap if needed
+    const pageWidth = doc.internal.pageSize.getWidth() - 20;
+    const lines = doc.splitTextToSize(convertedText, pageWidth);
+    doc.text(lines, 10, 10);
 
-    // Wrap text method
-    const wrappedText = doc.splitTextToSize(convertedText, pageWidth);
-
-    // Add the wrapped text to the PDF
-    doc.text(wrappedText, margin, yPosition);
-
-    // Save the PDF with the name based on the current font and text content
+    // 4) Download
     doc.save('converted_text.pdf');
 }
+
+
 
 
 // Function to update displayed text based on selected language and syllabification
