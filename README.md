@@ -252,6 +252,7 @@ This project is licensed under the [MIT License](LICENSE).
 - **Error Handling**: Enhance error handling to provide more user-friendly messages and log errors for debugging.
 - **Accessibility**: Continue to prioritize accessibility by adhering to WCAG guidelines and conducting user testing with individuals who have dyslexia.
 - **Ollama Implementation**: We are currently working on integrating the Ollama AI model into our app to dynamically generate images based on selected words. This feature will be available in the next release.
+The approach was tested but not efficient enough because implementing such big number of images was time consuming and requires a powerfull computer, so we implemented static images linked to words as a demo how it should look like
 - **Lazy Loading Images**: To improve performance, especially with a large number of images, consider implementing lazy loading techniques.
 - **Modal Animations**: Add subtle animations to modal pop-ups for a smoother user experience.
 
